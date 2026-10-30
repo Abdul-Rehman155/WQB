@@ -1,0 +1,19 @@
+{
+  "name": "Test User",
+  "email": "test@example.com",
+  "phone": "+911234567890",
+  "jobTitle": "IT",
+  "department": "IT",
+  "joiningDate": "2026-07-15",
+  "employeeType": "Full-Time",
+  "officeType": "Head Office",
+  "circle": "Mumbai",
+  "address": "Street 1",
+  "emergencyContactName": "Contact",
+  "emergencyContactPhone": "+911234567891",
+  "bankName": "SBI",
+  "accountNumber": "1234567890",
+  "ifscCode": "SBIN0001234",
+  "aadharNumber": "123412341234",
+  "panNumber": "ABCDE1234F"
+}

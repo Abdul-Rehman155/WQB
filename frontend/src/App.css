@@ -1,0 +1,289 @@
+:root {
+  --bg-color: #f8f9fa;
+  --card-bg: #ffffff;
+  --surface-alt: #f8f9fa;
+  --text-main: #2d3748;
+  --text-muted: #718096;
+  --border-color: #edf2f7;
+}
+
+[data-theme='dark'] {
+  --bg-color: #111827;
+  --card-bg: #1f2937;
+  --surface-alt: #374151;
+  --text-main: #f9fafb;
+  --text-muted: #cbd5e1;
+  --border-color: #4b5563;
+}
+
+body {
+  background-color: var(--bg-color) !important;
+  color: var(--text-main) !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.custom-card {
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-main) !important;
+}
+
+.text-main { color: var(--text-main) !important; }
+.text-custom-muted { color: var(--text-muted) !important; }
+
+.bg-white { background-color: var(--card-bg) !important; }
+.bg-light { background-color: var(--surface-alt) !important; }
+.text-dark { color: var(--text-main) !important; }
+.text-muted { color: var(--text-muted) !important; }
+
+.card, .modal-content, .offcanvas, .form-control, .form-select, .dropdown-menu {
+  background-color: var(--card-bg) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
+}
+
+.table-light, .table-light > th, .table-light > td {
+  background-color: var(--surface-alt) !important;
+  color: var(--text-main) !important;
+}
+
+.table, .table-striped > tbody > tr:nth-of-type(odd) > * {
+  color: var(--text-main) !important;
+}
+
+.border, .border-top, .border-bottom, .border-start, .border-end {
+  border-color: var(--border-color) !important;
+}
+
+.btn-outline-secondary, .btn-outline-light {
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Color Palette */
+:root {
+  --brand-green: #10b981;
+  --dark-text: #0f172a;
+  --light-gray: #f8fafc;
+}
+
+body {
+  background-color: var(--light-gray);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow-x: hidden;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+.app-main {
+  min-width: 0;
+}
+
+@media (max-width: 991.98px) {
+  .page-layout,
+  .main-container,
+  .payroll-page-layout {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  .page-layout > .container-fluid {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .page-layout header,
+  .page-layout .d-flex.justify-content-between,
+  .main-container > .d-flex.justify-content-between {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .page-layout .input-group[style],
+  .page-layout input[type="date"][style],
+  .main-container .input-group[style] {
+    width: 100% !important;
+    max-width: 100%;
+  }
+
+  .page-layout .table-responsive,
+  .main-container .table-responsive,
+  .payroll-page-layout .table-responsive {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .page-layout .card-body,
+  .main-container .card-body,
+  .payroll-page-layout .card-body {
+    padding: 1rem !important;
+  }
+
+  .fc .fc-toolbar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: 1rem !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .main-top-navbar {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+
+  .main-top-navbar .navbar-brand {
+    font-size: 1rem !important;
+  }
+
+  .main-top-navbar .container-fluid {
+    gap: 0.5rem;
+  }
+
+  .main-top-navbar .navbar-collapse {
+    width: 100%;
+  }
+
+  .main-top-navbar .navbar-nav {
+    align-items: stretch !important;
+    padding-bottom: 0.25rem;
+  }
+
+  .main-top-navbar .navbar-nav .btn,
+  .main-top-navbar .navbar-nav .badge {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .page-layout > .container-fluid {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+
+  .page-layout h1,
+  .page-layout h2,
+  .main-container h1,
+  .main-container h2 {
+    font-size: 1.25rem;
+  }
+
+  .page-layout .btn,
+  .main-container .btn {
+    white-space: normal;
+  }
+
+  .payroll-page-layout .mx-3 {
+    margin-left: 0.75rem !important;
+    margin-right: 0.75rem !important;
+  }
+
+  .payroll-page-layout .p-4 {
+    padding: 1rem !important;
+  }
+}
+
+/* Main Card Wrapper for Corners */
+.login-container-wrapper {
+  position: relative;
+  padding: 10px;
+  width: 100%;
+  max-width: 460px;
+}
+
+/* Corner Accents */
+.corner-tl {
+  position: absolute;
+  top: 0; left: 0;
+  width: 45px; height: 45px;
+  border-top: 4px solid var(--brand-green);
+  border-left: 4px solid var(--brand-green);
+  border-radius: 6px 0 0 0;
+}
+
+.corner-br {
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 45px; height: 45px;
+  border-bottom: 4px solid var(--brand-green);
+  border-right: 4px solid var(--brand-green);
+  border-radius: 0 0 6px 0;
+}
+
+/* Card Styling */
+.login-card {
+  border: 1px solid #edf2f7 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05) !important;
+  padding: 25px;
+}
+
+/* Form Styling */
+.form-label {
+  font-weight: 500;
+  color: var(--dark-text);
+  margin-bottom: 8px;
+}
+
+.form-control {
+  border-radius: 12px !important;
+  padding: 12px 15px !important;
+  border: 1px solid #d1d5db !important;
+}
+
+.form-control:focus {
+  border-color: var(--brand-green) !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+}
+
+/* Buttons */
+.btn-green {
+  background-color: var(--brand-green) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 12px !important;
+  font-weight: 600 !important;
+  color: white !important;
+  transition: all 0.3s ease;
+}
+
+.btn-green:hover {
+  background-color: #0d9668 !important;
+  transform: translateY(-1px);
+}
+
+.text-green {
+  color: var(--brand-green) !important;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+/* Diamond Divider */
+.divider-box {
+  position: relative;
+  text-align: center;
+  margin: 35px 0;
+}
+
+.divider-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: #e5e7eb;
+  z-index: 1;
+}
+
+.diamond {
+  position: relative;
+  z-index: 2;
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background-color: var(--brand-green);
+  transform: rotate(45deg);
+}

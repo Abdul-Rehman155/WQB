@@ -1,0 +1,11 @@
+{
+  "title": "Annual Leave",
+  "description": "Family vacation",
+  "startDate": "2026-07-20",
+  "endDate": "2026-07-22",
+  "allDay": true,
+  "category": "Leave",
+  "days": 3,
+  "employeeId": "6a57a7bbebb3500fbfd648c7",
+  "employeeName": "Test User"
+}

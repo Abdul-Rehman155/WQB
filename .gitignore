@@ -1,0 +1,24 @@
+# Dependencies and build output
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+frontend/dist/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Runtime data and uploads
+backend/uploads/*
+!backend/uploads/.gitkeep
+backend/logs/
+*.log
+
+# Local/editor files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.local
+.DS_Store
+Thumbs.db
