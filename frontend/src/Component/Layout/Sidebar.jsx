@@ -86,10 +86,9 @@ export default function Sidebar() {
       { label: 'Salary Components', to: '/payroll/components' },
       { label: 'Allowances and Deductions', to: '/payroll/allowances-deductions' },
       { label: 'Loans and Advances', to: '/payroll/loans-advances' },
-      { label: 'Arrear', to: '/payroll/arrear' },
+      { label: 'Arrears', to: '/payroll/arrear' },
       ...(userRole === 'salary clerk' || userRole === 'hr'
         ? [
-          { label: 'Payroll Panel', to: '/payroll' },
           { label: 'Analytics', to: '/analytics' },
         ]
         : []),
@@ -267,7 +266,7 @@ export default function Sidebar() {
                             <SubMenuItem to="/payroll/components" label="Salary Components" />
                             <SubMenuItem to="/payroll/allowances-deductions" label="Allowances and Deduction" />
                             <SubMenuItem to="/payroll/loans-advances" label="Loan and Advances" />
-                            <SubMenuItem to="/payroll/arrear" label="Arrear" />
+                            <SubMenuItem to="/payroll/arrear" label="Arrears" />
                           </Stack>
                         </div>
                       </Collapse>
@@ -280,7 +279,6 @@ export default function Sidebar() {
                 <div>
                   <h6 className="sidebar-heading">Payroll Expert</h6>
                   <Stack gap={1}>
-                    <NavItem to="/payroll" icon={Briefcase} label="Payroll Panel" active={location.pathname === "/payroll"} />
                     <NavItem to="/analytics" icon={BarChart3} label="Analytics" active={location.pathname === "/analytics" || location.pathname === "/payroll-deshboard"} />
                   </Stack>
                 </div>

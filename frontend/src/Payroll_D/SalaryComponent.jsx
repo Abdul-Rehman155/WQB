@@ -5,6 +5,20 @@ import axios from "axios";
 import { useTheme } from "../context/ThemeContext";
 
 const API_URL = "http://localhost:5000/api/salary-components";
+const displayComponentName = (name) => String(name || "").replace(/^demo\s+/i, "");
+const uniqueActiveComponents = (components) => {
+  const byName = new Map();
+  components
+    .filter((component) => component.status !== "Inactive")
+    .forEach((component) => {
+      const key = displayComponentName(component.name).trim().toLowerCase();
+      const current = byName.get(key);
+      if (!current || /^demo\s+/i.test(current.name || "")) {
+        byName.set(key, component);
+      }
+    });
+  return Array.from(byName.values());
+};
 
 const SalaryComponents = () => {
   const { theme } = useTheme();
@@ -197,8 +211,8 @@ const SalaryComponents = () => {
                   className={inputClass}
                 >
                   <option value="">Select component</option>
-                  {components.filter((component) => component.status !== "Inactive").map((component) => (
-                    <option key={component._id} value={component._id}>{component.name}</option>
+                  {uniqueActiveComponents(components).map((component) => (
+                    <option key={component._id} value={component._id}>{displayComponentName(component.name)}</option>
                   ))}
                 </Form.Select>
               </Col>
@@ -422,7 +436,7 @@ const SalaryComponents = () => {
                   {filteredData.map((comp) => (
                     <tr key={comp._id}>
                       <td className="ps-4 py-3">
-                        <div className="fw-bold">{comp.name}</div>
+                        <div className="fw-bold">{displayComponentName(comp.name)}</div>
                         {comp.description && (
                           <div className="text-muted small text-truncate" style={{ maxWidth: "250px" }}>
                             {comp.description}

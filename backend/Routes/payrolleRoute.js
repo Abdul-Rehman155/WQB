@@ -86,12 +86,18 @@ const calculatePayslip = async (employee, month, year) => {
 };
 
 router.post('/payroll/generate', async (req, res) => {
-  const { month, year } = req.body;
+  const { month, year, employeeId } = req.body;
   if (!month || !year || Number(month) < 1 || Number(month) > 12) {
     return res.status(400).json({ message: 'A valid month and year are required.' });
   }
   try {
-    const employees = await Employee.find({ status: 'Active' });
+    const employeeQuery = employeeId
+      ? { _id: employeeId, status: 'Active' }
+      : { status: 'Active' };
+    const employees = await Employee.find(employeeQuery);
+    if (employeeId && !employees.length) {
+      return res.status(404).json({ message: 'Active employee not found.' });
+    }
     const results = [];
     for (const employee of employees) {
       const breakdown = await calculatePayslip(employee, month, year);
@@ -137,6 +143,17 @@ router.post('/payroll/generate', async (req, res) => {
     return res.status(200).json({ message: 'Payroll generated', count: results.length, payslips: results });
   } catch (error) {
     return res.status(500).json({ message: error.message });
+  }
+});
+
+router.get('/payroll/preview/:employeeId/:month/:year', async (req, res) => {
+  try {
+    const employee = await Employee.findOne({ _id: req.params.employeeId, status: 'Active' });
+    if (!employee) return res.status(404).json({ message: 'Active employee not found.' });
+    const preview = await calculatePayslip(employee, req.params.month, req.params.year);
+    return res.json(preview);
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
   }
 });
 

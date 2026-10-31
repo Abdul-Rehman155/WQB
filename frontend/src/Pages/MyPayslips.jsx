@@ -4,6 +4,7 @@ import { CalendarDays, Eye, X } from "lucide-react";
 import axios from "axios";
 
 const API = "http://localhost:5000/api";
+const displayComponentName = (name) => String(name || "").replace(/^demo\s+/i, "");
 
 export default function MyPayslips() {
   const [slips, setSlips] = useState([]);
@@ -128,7 +129,7 @@ export default function MyPayslips() {
             <div className="payslip-section mb-4">
               <Line label="Basic salary" amount={selected.baseSalary} positive />
               {(selected.earnings || []).map((line, index) => (
-                <Line key={`e-${index}`} label={line.name} amount={line.amount} positive />
+                <Line key={`e-${index}`} label={displayComponentName(line.name)} amount={line.amount} positive />
               ))}
               <Line label="Gross salary" amount={selected.grossSalary} positive strong />
             </div>
@@ -136,7 +137,7 @@ export default function MyPayslips() {
             <h6 className="fw-bold text-danger mb-2">Deductions</h6>
             <div className="payslip-section mb-4">
               {(selected.deductionLines || []).map((line, index) => (
-                <Line key={`d-${index}`} label={line.name} amount={line.amount} />
+                <Line key={`d-${index}`} label={displayComponentName(line.name)} amount={line.amount} />
               ))}
               <Line label="Total deductions" amount={selected.totalDeductions} strong />
             </div>

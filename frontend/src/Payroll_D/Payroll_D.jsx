@@ -1,15 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Container, Row, Col, Table, Button, Nav, Card, Form, Badge, InputGroup, Spinner, Image
+  Container, Row, Col, Table, Button, Nav, Card, Form, Badge, InputGroup, Spinner, Image, Modal, ListGroup
 } from 'react-bootstrap';
 import { ShieldCheck, RefreshCcw, Check, X, User } from 'lucide-react';
 import axios from 'axios';
+
+const displayComponentName = (name) => String(name || '').replace(/^demo\s+/i, '');
 
 const Payroll_D = () => {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeMonth, setActiveMonth] = useState(new Date().toLocaleString('default', { month: 'short' }));
   const [activeYear, setActiveYear] = useState(String(new Date().getFullYear()));
+  const [preview, setPreview] = useState(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewEmployeeId, setPreviewEmployeeId] = useState(null);
 
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const years = ['2025', '2026', '2027'];
@@ -22,6 +27,41 @@ const Payroll_D = () => {
         year: activeYear,
       });
       alert(`${activeMonth} ${activeYear} payroll generated successfully.`);
+      await loadPayrollData();
+    } catch (error) {
+      alert(error.response?.data?.message || 'Payroll generation failed.');
+    }
+  };
+
+  const openPreview = async (employeeId) => {
+    setPreviewLoading(true);
+    setPreviewEmployeeId(employeeId);
+    try {
+      const month = String(months.indexOf(activeMonth) + 1).padStart(2, '0');
+      const response = await axios.get(
+        `http://localhost:5000/api/payroll/preview/${employeeId}/${month}/${activeYear}`
+      );
+      setPreview(response.data);
+    } catch (error) {
+      alert(error.response?.data?.message || 'Payslip preview failed.');
+      setPreviewEmployeeId(null);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  const confirmPreviewAndGenerate = async () => {
+    if (!previewEmployeeId) return;
+    try {
+      const month = String(months.indexOf(activeMonth) + 1).padStart(2, '0');
+      await axios.post('http://localhost:5000/api/payroll/generate', {
+        month,
+        year: activeYear,
+        employeeId: previewEmployeeId,
+      });
+      alert(`${preview?.employeeName || 'Employee'} payslip generated successfully.`);
+      setPreview(null);
+      setPreviewEmployeeId(null);
       await loadPayrollData();
     } catch (error) {
       alert(error.response?.data?.message || 'Payroll generation failed.');
@@ -132,7 +172,7 @@ const Payroll_D = () => {
             <Form.Select size="sm" value={activeYear} onChange={(e) => setActiveYear(e.target.value)} style={{ width: '90px' }}>
               {years.map(y => <option key={y} value={y}>{y}</option>)}
             </Form.Select>
-            <Button variant="success" size="sm" onClick={generatePayroll}>Generate Payroll</Button>
+            <Button variant="success" size="sm" onClick={generatePayroll}>Generate All Payroll</Button>
             <Button variant="outline-light" size="sm" onClick={loadPayrollData}><RefreshCcw size={16} /> Sync</Button>
           </Col>
         </Row>
@@ -224,6 +264,14 @@ const Payroll_D = () => {
                       <td className="text-end px-4">
                         <div className="d-flex justify-content-end gap-2">
                           <Button 
+                            variant="outline-primary"
+                            size="sm"
+                            className="rounded-3"
+                            onClick={() => openPreview(emp.id)}
+                          >
+                            Preview
+                          </Button>
+                          <Button 
                             variant="success" 
                             size="sm" 
                             className="fw-bold px-3 py-2 rounded-3 shadow-sm border-0" 
@@ -247,6 +295,50 @@ const Payroll_D = () => {
           HWB ENCRYPTED PAYROLL INTERFACE • AUTHORIZED ACCESS ONLY
         </Card.Footer>
       </Card>
+      <Modal show={Boolean(preview || previewLoading)} onHide={() => { setPreview(null); setPreviewEmployeeId(null); }} size="lg" centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Payslip Preview — {activeMonth} {activeYear}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {previewLoading ? <div className="text-center py-4"><Spinner animation="border" variant="success" /></div> : preview && (
+            <>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                  <h5 className="mb-1">{preview.employeeName}</h5>
+                  <small className="text-muted">Review all values before final generation</small>
+                </div>
+                <Badge bg="secondary">{preview.month}</Badge>
+              </div>
+              <Row className="g-3 mb-4">
+                <Col md={3}><Card body className="text-center"><small className="text-muted">Basic</small><div className="fw-bold">₹{Number(preview.baseSalary).toLocaleString()}</div></Card></Col>
+                <Col md={3}><Card body className="text-center"><small className="text-muted">Present / Absent</small><div className="fw-bold">{preview.presentDays} / {preview.absentDays}</div></Card></Col>
+                <Col md={3}><Card body className="text-center"><small className="text-muted">Gross</small><div className="fw-bold text-success">₹{Number(preview.grossSalary).toLocaleString()}</div></Card></Col>
+                <Col md={3}><Card body className="text-center"><small className="text-muted">Net Pay</small><div className="fw-bold text-primary">₹{Number(preview.netSalary).toLocaleString()}</div></Card></Col>
+              </Row>
+              <Row>
+                <Col md={6}>
+                  <h6 className="text-success fw-bold">EARNINGS</h6>
+                  <ListGroup className="mb-3">
+                    <ListGroup.Item className="d-flex justify-content-between"><span>Basic salary</span><strong>₹{Number(preview.baseSalary).toLocaleString()}</strong></ListGroup.Item>
+                    {(preview.earnings || []).map((line, index) => <ListGroup.Item key={`earning-${index}`} className="d-flex justify-content-between"><span>{displayComponentName(line.name)}</span><strong className="text-success">+ ₹{Number(line.amount).toLocaleString()}</strong></ListGroup.Item>)}
+                  </ListGroup>
+                </Col>
+                <Col md={6}>
+                  <h6 className="text-danger fw-bold">DEDUCTIONS</h6>
+                  <ListGroup>
+                    {(preview.deductionLines || []).map((line, index) => <ListGroup.Item key={`deduction-${index}`} className="d-flex justify-content-between"><span>{displayComponentName(line.name)}</span><strong className="text-danger">- ₹{Number(line.amount).toLocaleString()}</strong></ListGroup.Item>)}
+                  </ListGroup>
+                </Col>
+              </Row>
+              <AlertPreviewNote preview={preview} />
+            </>
+          )}
+        </Modal.Body>
+        {preview && <Modal.Footer>
+          <Button variant="outline-secondary" onClick={() => { setPreview(null); setPreviewEmployeeId(null); }}>Cancel</Button>
+          <Button variant="success" onClick={confirmPreviewAndGenerate}>Confirm & Generate Payslip</Button>
+        </Modal.Footer>}
+      </Modal>
       <style>{`
         .payroll-page-layout {
           min-height: 100vh;
@@ -267,5 +359,12 @@ const Payroll_D = () => {
     </Container>
   );
 };
+
+const AlertPreviewNote = ({ preview }) => (
+  <div className="mt-3 p-3 rounded bg-light small">
+    <strong>Review:</strong> Loan repayment ₹{Number(preview.loanRepayment || 0).toLocaleString()} and arrears ₹{Number(preview.arrears || 0).toLocaleString()} are included only when their records are active/approved.
+    <div className="text-muted mt-1">Holiday entries are not included because the current attendance model does not store Holiday status.</div>
+  </div>
+);
 
 export default Payroll_D;
