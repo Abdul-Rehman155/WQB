@@ -96,7 +96,7 @@ router.post('/payroll/generate', async (req, res) => {
     for (const employee of employees) {
       const breakdown = await calculatePayslip(employee, month, year);
       const existing = await Payroll.findOne({ employeeId: employee._id, month: breakdown.month });
-      if (existing) {
+      if (existing?.status === 'Paid') {
         results.push(existing);
         continue;
       }
@@ -105,7 +105,10 @@ router.post('/payroll/generate', async (req, res) => {
         breakdown,
         { upsert: true, new: true, setDefaultsOnInsert: true },
       );
-      if (breakdown.loanRepayment > 0) {
+      // Only apply balance-changing adjustments when the payslip is first created.
+      // Re-generating a Generated/Downloaded slip must recalculate components
+      // without deducting the same loan or arrear a second time.
+      if (!existing && breakdown.loanRepayment > 0) {
         const loans = await LoanAdvance.find({
           employeeId: employee._id,
           status: 'Active',
@@ -123,7 +126,7 @@ router.post('/payroll/generate', async (req, res) => {
           remaining = Number((remaining - applied).toFixed(2));
         }
       }
-      if (breakdown.arrears > 0) {
+      if (!existing && breakdown.arrears > 0) {
         await Arrear.updateOne(
           { employeeId: employee._id, status: 'Approved', appliedMonth: null },
           { $set: { status: 'Applied', appliedMonth: breakdown.month } },
@@ -148,8 +151,9 @@ router.get('/payroll/:monthYear', async (req, res) => {
 
 router.get('/payroll/me/:email', async (req, res) => {
   try {
-    const employee = await Employee.findOne({ email: req.params.email.toLowerCase().trim() });
-    if (!employee) return res.status(404).json({ message: 'No employee profile is linked to this email.' });
+    const email = req.params.email.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const employee = await Employee.findOne({ email: new RegExp(`^${email}$`, 'i') });
+    if (!employee) return res.json([]);
     const payslips = await Payroll.find({ employeeId: employee._id }).sort({ createdAt: -1 }).populate('employeeId');
     return res.json(payslips);
   } catch (error) {
@@ -187,7 +191,19 @@ router.get('/payroll-components/assignments/:employeeId', async (req, res) => {
   catch (error) { return res.status(500).json({ message: error.message }); }
 });
 router.post('/payroll-components/assignments', async (req, res) => {
-  try { return res.status(201).json(await EmployeeSalaryComponent.create(req.body)); }
+  try {
+    const { employeeId, componentId, value, calculationType } = req.body;
+    if (!employeeId || !componentId || value === undefined || !calculationType) {
+      return res.status(400).json({ message: 'Employee, component, value and calculation type are required.' });
+    }
+
+    const assignment = await EmployeeSalaryComponent.findOneAndUpdate(
+      { employeeId, componentId },
+      { employeeId, componentId, value: Number(value), calculationType, active: true },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    ).populate('componentId');
+    return res.status(200).json(assignment);
+  }
   catch (error) { return res.status(400).json({ message: error.message }); }
 });
 

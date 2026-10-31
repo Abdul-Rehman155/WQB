@@ -12,6 +12,13 @@ const SalaryComponents = () => {
 
   const [components, setComponents] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [assignmentData, setAssignmentData] = useState({
+    employeeId: "",
+    componentId: "",
+    value: "",
+    calculationType: "Fixed"
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
 
@@ -40,7 +47,35 @@ const SalaryComponents = () => {
     }
   };
 
-  useEffect(() => { fetchComponents(); }, []);
+  useEffect(() => {
+    fetchComponents();
+    axios.get("http://localhost:5000/api/employee")
+      .then((res) => setEmployees(Array.isArray(res.data) ? res.data.filter((employee) => employee.status !== "Inactive") : []))
+      .catch((err) => console.error("Employee fetch error:", err));
+  }, []);
+
+  const handleAssignmentComponentChange = (componentId) => {
+    const component = components.find((item) => item._id === componentId);
+    setAssignmentData({
+      ...assignmentData,
+      componentId,
+      value: component?.value ?? "",
+      calculationType: component?.calculationType || "Fixed"
+    });
+  };
+
+  const handleAssignComponent = async (event) => {
+    event.preventDefault();
+    try {
+      await axios.post("http://localhost:5000/api/payroll-components/assignments", {
+        ...assignmentData,
+        value: Number(assignmentData.value)
+      });
+      alert("Salary component assigned to employee.");
+    } catch (err) {
+      alert(err.response?.data?.message || "Unable to assign salary component.");
+    }
+  };
 
   // --- SEARCH & FILTER LOGIC ---
   const handleSearch = () => {
@@ -135,6 +170,66 @@ const SalaryComponents = () => {
         <h4 className={`fw-bold mb-4 ${isDark ? 'text-white' : 'text-dark'}`}>
           Salary Components Management
         </h4>
+
+        <Card className={`border-0 shadow-sm rounded-4 p-4 mb-4 ${isDark ? 'bg-secondary' : 'bg-white'}`}>
+          <h5 className="fw-bold mb-1">Assign Component to Employee</h5>
+          <p className="text-muted small mb-3">Assigned values are included the next time payroll is generated.</p>
+          <Form onSubmit={handleAssignComponent}>
+            <Row className="g-3 align-items-end">
+              <Col md={4}>
+                <Form.Label>Employee</Form.Label>
+                <Form.Select
+                  required
+                  value={assignmentData.employeeId}
+                  onChange={(event) => setAssignmentData({ ...assignmentData, employeeId: event.target.value })}
+                  className={inputClass}
+                >
+                  <option value="">Select employee</option>
+                  {employees.map((employee) => <option key={employee._id} value={employee._id}>{employee.name} — {employee.email}</option>)}
+                </Form.Select>
+              </Col>
+              <Col md={3}>
+                <Form.Label>Component</Form.Label>
+                <Form.Select
+                  required
+                  value={assignmentData.componentId}
+                  onChange={(event) => handleAssignmentComponentChange(event.target.value)}
+                  className={inputClass}
+                >
+                  <option value="">Select component</option>
+                  {components.filter((component) => component.status !== "Inactive").map((component) => (
+                    <option key={component._id} value={component._id}>{component.name}</option>
+                  ))}
+                </Form.Select>
+              </Col>
+              <Col md={2}>
+                <Form.Label>{assignmentData.calculationType === "Percentage" ? "Percent (%)" : "Amount"}</Form.Label>
+                <Form.Control
+                  required
+                  type="number"
+                  min="0"
+                  value={assignmentData.value}
+                  onChange={(event) => setAssignmentData({ ...assignmentData, value: event.target.value })}
+                  className={inputClass}
+                />
+              </Col>
+              <Col md={2}>
+                <Form.Label>Calculation</Form.Label>
+                <Form.Select
+                  value={assignmentData.calculationType}
+                  onChange={(event) => setAssignmentData({ ...assignmentData, calculationType: event.target.value })}
+                  className={inputClass}
+                >
+                  <option value="Fixed">Fixed</option>
+                  <option value="Percentage">Percentage</option>
+                </Form.Select>
+              </Col>
+              <Col md={1}>
+                <Button type="submit" className="w-100 border-0" style={{ backgroundColor: "#0fb676" }}>Assign</Button>
+              </Col>
+            </Row>
+          </Form>
+        </Card>
 
         <Row>
           {/* LEFT: Add/Edit Form matching exact screenshot */}
