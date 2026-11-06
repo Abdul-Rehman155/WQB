@@ -13,6 +13,12 @@ import SalaryComponents from '../Payroll_D/SalaryComponent';
 
 const API_BASE = "http://localhost:5000/api";
 
+const getLocalDateString = () => {
+  const date = new Date();
+  const offset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - offset).toISOString().split('T')[0];
+};
+
 export default function Dashboard() {
   const location = useLocation();
   const [stats, setStats] = useState(null);
@@ -60,7 +66,7 @@ export default function Dashboard() {
       ] = await Promise.allSettled([
         axios.get(`${API_BASE}/employees`).catch(() => axios.get(`${API_BASE}/employee`)),
         axios.get(`${API_BASE}/branches`).catch(() => axios.get(`${API_BASE}/office`)).catch(() => axios.get(`${API_BASE}/admin/office`)),
-        axios.get(`${API_BASE}/attendance`).catch(() => axios.get(`${API_BASE}/attendance/today`)),
+        axios.get(`${API_BASE}/attendance?date=${getLocalDateString()}`).catch(() => axios.get(`${API_BASE}/attendance/today`)),
         axios.get(`${API_BASE}/leaves`).catch(() => axios.get(`${API_BASE}/leave`)),
         axios.get(`${API_BASE}/jobs`).catch(() => axios.get(`${API_BASE}/admin/jobs`))
       ]);
@@ -89,8 +95,15 @@ export default function Dashboard() {
       if (attRes.status === "fulfilled" && attRes.value?.data) {
         const data = attRes.value.data;
         const records = Array.isArray(data) ? data : (data.attendance || data.records || []);
-        presentCount = records.filter(r => (r.status || "").toLowerCase() === "present").length;
-        attendanceRate = empCount > 0 ? Math.round((presentCount / empCount) * 100) : (records.length > 0 ? 100 : 0);
+        const presentEmployeeIds = new Set(
+          records
+            .filter(r => ["present", "late"].includes((r.status || "").toLowerCase()))
+            .map(r => String(r.employeeId || r.employeeName))
+        );
+        presentCount = presentEmployeeIds.size;
+        attendanceRate = empCount > 0
+          ? Math.min(100, Math.round((presentCount / empCount) * 100))
+          : 0;
       } else if (initialData?.attendanceRate?.value) {
         attendanceRate = initialData.attendanceRate.value;
       }

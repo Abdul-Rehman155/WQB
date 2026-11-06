@@ -30,10 +30,11 @@ router.get('/dashboard-stats', authMiddleware, async (req, res) => {
   }
 
   try {
+    const today = new Date().toISOString().split('T')[0];
     const [employees, leaveEvents, attendanceRecords] = await Promise.all([
       Employee.find({}).lean().catch(() => []),
       Event ? Event.find({ category: 'Leave' }).lean().catch(() => []) : Promise.resolve([]),
-      Attendance.find({}).lean().catch(() => [])
+      Attendance.find({ date: today }).lean().catch(() => [])
     ]);
 
     const totalEmployees = Array.isArray(employees) ? employees.length : 0;
@@ -45,14 +46,19 @@ router.get('/dashboard-stats', authMiddleware, async (req, res) => {
       ? [...new Set(employees.map((employee) => employee.department).filter(Boolean))]
       : [];
     const pendingLeaves = Array.isArray(leaveEvents) ? leaveEvents.length : 0;
-    const presentCount = Array.isArray(attendanceRecords)
-      ? attendanceRecords.filter((record) => record.status === 'Present' || record.status === 'Late').length
-      : 0;
+    const presentEmployeeIds = Array.isArray(attendanceRecords)
+      ? new Set(
+          attendanceRecords
+            .filter((record) => record.status === 'Present' || record.status === 'Late')
+            .map((record) => String(record.employeeId || record.employeeName))
+        )
+      : new Set();
+    const presentCount = presentEmployeeIds.size;
     const absentCount = Array.isArray(attendanceRecords)
       ? attendanceRecords.filter((record) => record.status === 'Absent').length
       : 0;
     const attendanceRate = totalEmployees > 0
-      ? Math.round((presentCount / Math.max(totalEmployees, 1)) * 100)
+      ? Math.min(100, Math.round((presentCount / totalEmployees) * 100))
       : 0;
 
     const stats = {
