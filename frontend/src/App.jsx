@@ -16,6 +16,7 @@ import PayrollAdjustments from './Pages/PayrollAdjustments';
 import LoginPage from './Pages/Login';
 import LeaveBalances from './Pages/Leave-balances';
 import LeaveTypesPage from './Pages/LeaveTypes';
+import LeavePolicies from './Pages/LeavePolicies';
 import { useTheme } from './context/ThemeContext';
 
 // Helper: Role ko normalize karne ke liye
@@ -135,6 +136,7 @@ function AppContent() {
             <Route path="/leave" element={<ProtectedRoute><Leave /></ProtectedRoute>} />
             <Route path="/leave/balances" element={<ProtectedRoute><LeaveBalances /></ProtectedRoute>} />
             <Route path="/leave/types" element={<ProtectedRoute><LeaveTypesPage /></ProtectedRoute>} />
+            <Route path="/leave/policies" element={<ProtectedRoute><LeavePolicies /></ProtectedRoute>} />
 
             {/* Role Specific Routes */}
             <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminPanel /></ProtectedRoute>} />

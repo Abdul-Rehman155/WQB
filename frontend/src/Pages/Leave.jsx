@@ -32,6 +32,7 @@ function Leave() {
   const [selectedLeave, setSelectedLeave] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [dbLeaveTypes, setDbLeaveTypes] = useState([]);
+  const [leavePolicies, setLeavePolicies] = useState([]);
 
   const [formData, setFormData] = useState({
     type: "", 
@@ -64,6 +65,10 @@ function Leave() {
         setDbLeaveTypes(activeTypes);
         if(activeTypes.length > 0) setFormData(prev => ({...prev, type: activeTypes[0].name}));
       }
+
+      const policyRes = await fetch("http://localhost:5000/api/leave-policies?status=Active");
+      const policyData = await policyRes.json();
+      if (Array.isArray(policyData)) setLeavePolicies(policyData);
 
       const [events] = await Promise.all([getEvents()]);
       const leaveEvents = (Array.isArray(events) ? events : []).filter(
@@ -138,6 +143,15 @@ function Leave() {
       const start = new Date(formData.startDate);
       const end = new Date(formData.endDate);
       const diffDays = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24)) + 1;
+      if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) {
+        alert("Please select a valid leave date range.");
+        return;
+      }
+      const policy = leavePolicies.find((item) => item.leaveType === formData.type && item.status === "Active");
+      if (policy && (diffDays < Number(policy.minDaysPerApplication) || diffDays > Number(policy.maxDaysPerApplication))) {
+        alert(`This policy allows ${policy.minDaysPerApplication} to ${policy.maxDaysPerApplication} days per application.`);
+        return;
+      }
       const emp = employees.find((x) => String(x._id) === String(formData.employeeId));
       const employeeName = emp ? emp.name : "";
       const employeeCode = emp?.employeeId || emp?.empId || "";

@@ -16,6 +16,7 @@ const payrollSchema = require("./Routes/payrolleRoute");
 const salaryRoute= require("./Routes/salaryRoutes");
 const authRoute = require("./Routes/authRoute");
 const leaveTypeRoute = require("./Routes/leaveTypeRpute");
+const leavePolicyRoute = require("./Routes/leavePolicyRoute");
 const app = express();
 const path = require("path");
 
@@ -65,6 +66,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/salary-components", salaryRoute);
 app.use("/api/leave-types", leaveTypeRoute);
 app.use("/api/leaves", leaveTypeRoute);
+app.use("/api/leave-policies", leavePolicyRoute);
 
 // Home Route
 app.get("/", (req, res) => {

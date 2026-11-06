@@ -38,17 +38,23 @@ const LeaveBalances = () => {
   const fetchBalances = useCallback(async () => {
     setLoading(true);
     try {
-      const [empRes, typeRes, leaveRes] = await Promise.all([
+      const [empRes, typeRes, leaveRes, policyRes] = await Promise.all([
         getEmployees(),
         fetch("http://localhost:5000/api/leave-types").then((res) =>
           res.json(),
         ),
         getEvents(),
+        fetch("http://localhost:5000/api/leave-policies?status=Active").then((res) =>
+          res.json(),
+        ),
       ]);
 
       if (Array.isArray(empRes) && Array.isArray(typeRes)) {
         const processedData = empRes.map((emp) => {
           const leavesCalculation = typeRes.map((type) => {
+            const policy = Array.isArray(policyRes)
+              ? policyRes.find((item) => item.leaveType === type.name)
+              : null;
             const used = Array.isArray(leaveRes)
               ? leaveRes
                   .filter(
@@ -64,9 +70,9 @@ const LeaveBalances = () => {
 
             return {
               name: type.name,
-              total: type.maxDays,
+              total: policy?.annualAccrual ?? type.maxDays,
               used: used,
-              available: type.maxDays - used,
+              available: (policy?.annualAccrual ?? type.maxDays) - used,
               color: type.color || "#10b981",
             };
           });
